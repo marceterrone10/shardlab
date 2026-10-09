@@ -1,0 +1,17 @@
+# Build output
+/bin/
+/dist/
+
+# Generated datasets and benchmark artifacts
+/.data/
+/bench/results/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store

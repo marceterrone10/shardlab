@@ -12,3 +12,12 @@
 
 Las mediciones futuras deben registrar versión de PostgreSQL, hardware,
 volumen, concurrencia, configuración y semilla.
+
+## 2026-10-12 — Carga repartida
+
+- `make load` genera cada cliente y lo inserta en el baseline y en un shard.
+- El destino sale de `ShardForCustomer`. Las filas hijas acompañan a su
+  `cliente_id`.
+- Al terminar, el comando comprueba que el cliente 4 está en el baseline y en
+  `shard0`, y que la suma de los shards coincide con el baseline.
+- Los CSV quedan como salida de inspección. La carga no los lee.

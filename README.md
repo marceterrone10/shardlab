@@ -46,10 +46,10 @@ flowchart TD
 
 Este primer corte incluye:
 
-- módulo Go sin dependencias externas;
+- módulo Go con `pgx` solo en el cargador;
 - coordinador HTTP con health check, ruteo determinista y plan scatter;
 - analizador CLI con una heurística inicial de componentes conectados;
-- generador reproducible de fixtures CSV;
+- generador reproducible de fixtures y cargador hacia baseline y shards;
 - DDL del CRM, Docker Compose, Makefile y pruebas unitarias.
 
 El coordinador todavía **no ejecuta SQL ni hace merge de resultados**. La API
@@ -62,6 +62,7 @@ shardlab/
 ├── analyzer/              # análisis de frecuencias de JOINs
 ├── bench/                 # scripts y resultados de benchmark
 ├── coordinator/           # configuración, ruteo y API HTTP
+├── load/                  # reparto e inserción en baseline y shards
 ├── docs/
 │   ├── bitacora.md
 │   └── decisiones.md
@@ -79,8 +80,9 @@ Requisitos: Go 1.22 o posterior y Docker con Compose v2.
 
 ```bash
 make test
-make seed SIZE=100k       # genera CSV en .data/seed
 make up                   # baseline + 3 shards + coordinador
+make load SIZE=100k       # reparte clientes en baseline y shards
+make seed SIZE=100k       # genera CSV en .data/seed para inspección
 ```
 
 Comprobar el proceso y el ruteo:
@@ -94,8 +96,10 @@ curl http://localhost:8080/v1/scatter-plan
 Los puertos locales son `5432` para baseline y `5433`–`5435` para los tres
 shards. Las credenciales de laboratorio son `shardlab` / `shardlab`.
 
-`make seed` genera fixtures compatibles con `COPY`; la carga y distribución
-automática entre baseline y shards se implementará en la fase 1.
+`make load` pide cada cliente al generador y lo inserta en el baseline y en el
+shard que indica `ShardForCustomer`. El cliente 4 queda en `shard0` junto con
+sus filas hijas. `make seed` sigue escribiendo los mismos datos en CSV para
+poder inspeccionarlos, pero la carga no lee esos archivos.
 
 ## Analizador
 
@@ -131,7 +135,7 @@ línea base sea honesta.
 ## Roadmap
 
 - [x] **Fase 0:** estructura del repo y Docker Compose.
-- [ ] **Fase 1:** completar carga del esquema y distribución de fixtures.
+- [x] **Fase 1:** completar carga del esquema y distribución de fixtures.
 - [ ] **Fase 2:** baseline con JOINs puros y primeras mediciones.
 - [ ] **Fase 3:** ejecución SQL con ruteo por `cliente_id`.
 - [ ] **Fase 4:** scatter-gather y agregación parcial.

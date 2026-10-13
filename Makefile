@@ -3,13 +3,14 @@ BIN_DIR ?= bin
 SIZE ?= 100k
 SEED ?= 42
 
-.PHONY: help fmt vet test build seed up down clean
+.PHONY: help fmt vet test build seed load up down clean
 
 help:
 	@echo "Targets:"
-	@echo "  make build             Build coordinator, analyzer and seed binaries"
+	@echo "  make build             Build coordinator, analyzer, seed and load binaries"
 	@echo "  make test              Run the Go test suite"
 	@echo "  make seed SIZE=100k    Generate deterministic CRM CSV fixtures"
+	@echo "  make load SIZE=100k    Load customers into baseline and three shards"
 	@echo "  make up                Start baseline, three shards and coordinator"
 	@echo "  make down              Stop the local stack"
 
@@ -27,12 +28,18 @@ build:
 	$(GO) build -o $(BIN_DIR)/shardlab-coordinator ./coordinator/cmd/shardlab-coordinator
 	$(GO) build -o $(BIN_DIR)/shardlab-analyzer ./analyzer/cmd/shardlab-analyzer
 	$(GO) build -o $(BIN_DIR)/shardlab-seed ./seed/cmd/shardlab-seed
+	$(GO) build -o $(BIN_DIR)/shardlab-load ./load/cmd/shardlab-load
 
 seed:
 	$(GO) run ./seed/cmd/shardlab-seed \
 		-size "$(SIZE)" \
 		-seed "$(SEED)" \
 		-output .data/seed
+
+load:
+	$(GO) run ./load/cmd/shardlab-load \
+		-size "$(SIZE)" \
+		-seed "$(SEED)"
 
 up:
 	docker compose up --build -d

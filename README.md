@@ -1,16 +1,9 @@
 # shardlab
 
-> Un experimento de aprendizaje: mini motor de consultas distribuido sobre
+> Mini motor de consultas distribuido sobre
 > PostgreSQL, con co-location de tablas decidida según el patrón de consultas.
-
-![estado](https://img.shields.io/badge/estado-en%20construcci%C3%B3n-orange)
-![license](https://img.shields.io/badge/license-MIT-blue)
-
-**Esto no es un producto ni pretende reemplazar a Citus o Vitess.** Es un
-laboratorio para entender, midiendo, cómo se combinan sharding, co-location,
-ejecución en árbol y paralelismo por cores.
-
-## Pregunta de investigación
+ 
+[![Go](https://img.shields.io/badge/Go-1.26.1-blue?logo=go)](https://go.dev) [![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)](docker-compose.yml)
 
 > ¿Cuánto mejora la latencia si la co-location de tablas se decide mirando el
 > log de consultas, en comparación con particionar todo por hash de
@@ -128,31 +121,9 @@ línea base sea honesta.
   `EXPLAIN (ANALYZE, BUFFERS)`.
 - **Reproducibilidad:** semillas fijas y stack levantable con Docker.
 
-## Roadmap
-
-- [x] **Fase 0:** estructura del repo y Docker Compose.
-- [ ] **Fase 1:** completar carga del esquema y distribución de fixtures.
-- [ ] **Fase 2:** baseline con JOINs puros y primeras mediciones.
-- [ ] **Fase 3:** ejecución SQL con ruteo por `cliente_id`.
-- [ ] **Fase 4:** scatter-gather y agregación parcial.
-- [ ] **Fase 5:** paralelismo interno con pool de workers.
-- [ ] **Fase 6:** merge en árbol multinivel contra merge plano.
-- [ ] **Fase 7:** analizador de carga y co-location sugerida.
-- [ ] **Fase 8:** benchmark final, gráficos y conclusiones.
-
 ## Fuera de alcance
 
 - Transacciones distribuidas.
 - Rebalanceo automático.
 - JOINs con shuffle entre claves distintas.
 - Alta disponibilidad y replicación.
-- Cualquier uso en producción.
-
-## Documentación
-
-Los hallazgos se registran en [`docs/bitacora.md`](docs/bitacora.md) y las
-decisiones de diseño en [`docs/decisiones.md`](docs/decisiones.md).
-
-## Licencia
-
-MIT

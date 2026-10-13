@@ -1,0 +1,74 @@
+name: shardlab
+
+x-postgres: &postgres
+  image: postgres:16-alpine
+  environment:
+    POSTGRES_DB: shardlab
+    POSTGRES_USER: shardlab
+    POSTGRES_PASSWORD: shardlab
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U shardlab -d shardlab"]
+    interval: 2s
+    timeout: 3s
+    retries: 20
+  volumes:
+    - ./schema/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+
+services:
+  baseline:
+    <<: *postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - baseline-data:/var/lib/postgresql/data
+      - ./schema/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+
+  shard0:
+    <<: *postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - shard0-data:/var/lib/postgresql/data
+      - ./schema/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+
+  shard1:
+    <<: *postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - shard1-data:/var/lib/postgresql/data
+      - ./schema/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+
+  shard2:
+    <<: *postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - shard2-data:/var/lib/postgresql/data
+      - ./schema/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+
+  coordinator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SHARDLAB_HTTP_ADDRESS: ":8080"
+      SHARDLAB_SHARD_COUNT: "3"
+      SHARDLAB_SHARD_0_DSN: postgres://shardlab:shardlab@shard0:5432/shardlab?sslmode=disable
+      SHARDLAB_SHARD_1_DSN: postgres://shardlab:shardlab@shard1:5432/shardlab?sslmode=disable
+      SHARDLAB_SHARD_2_DSN: postgres://shardlab:shardlab@shard2:5432/shardlab?sslmode=disable
+    depends_on:
+      shard0:
+        condition: service_healthy
+      shard1:
+        condition: service_healthy
+      shard2:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+volumes:
+  baseline-data:
+  shard0-data:
+  shard1-data:
+  shard2-data:
